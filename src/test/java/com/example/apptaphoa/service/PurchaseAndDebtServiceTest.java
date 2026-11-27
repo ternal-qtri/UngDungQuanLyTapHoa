@@ -30,8 +30,9 @@ class PurchaseAndDebtServiceTest {
         ncc.setHoTenNCC("NCC A");
         suppliers.insert(ncc); // mã 1, công nợ 0
         purchases = new Fakes.Purchases(products, suppliers);
-        purchaseService = new PurchaseService(suppliers, purchases);
-        debtService = new DebtService(suppliers);
+        AuditService audit = new AuditService(new Fakes.NhatKy());
+        purchaseService = new PurchaseService(suppliers, purchases, audit);
+        debtService = new DebtService(suppliers, audit);
     }
 
     @AfterEach

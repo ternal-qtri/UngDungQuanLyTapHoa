@@ -21,10 +21,12 @@ public class PurchaseService {
 
     private final NhaCungCapRepository suppliers;
     private final PurchaseRepository purchases;
+    private final AuditService audit;
 
-    public PurchaseService(NhaCungCapRepository suppliers, PurchaseRepository purchases) {
+    public PurchaseService(NhaCungCapRepository suppliers, PurchaseRepository purchases, AuditService audit) {
         this.suppliers = suppliers;
         this.purchases = purchases;
+        this.audit = audit;
     }
 
     /**
@@ -68,6 +70,8 @@ public class PurchaseService {
         receipt.setDaThanhToan(Checks.money(daThanhToan));
         receipt.setMaNCC(maNCC);
         receipt.setMaNV(manager.getMaNV());
-        return purchases.savePurchase(receipt, details, debtAdded);
+        int maPN = purchases.savePurchase(receipt, details, debtAdded);
+        audit.record("NHAP_HANG", "PN #" + maPN + ", NCC " + maNCC + ", tổng " + total + ", còn nợ " + debtAdded);
+        return maPN;
     }
 }

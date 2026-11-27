@@ -20,6 +20,7 @@ class SalesServiceTest {
     private Fakes.Sales sales;
     private SalesService service;
     private NhanVien staff;
+    private Fakes.NhatKy log;
 
     @BeforeEach
     void setUp() {
@@ -27,7 +28,8 @@ class SalesServiceTest {
         products.insert(Fakes.product("Mì tôm", 5000, 5));     // mã 1
         products.insert(Fakes.product("Gạo 5kg", 150000, 1)); // mã 2
         sales = new Fakes.Sales(products);
-        service = new SalesService(products, sales);
+        log = new Fakes.NhatKy();
+        service = new SalesService(products, sales, new AuditService(log));
         staff = Fakes.user("NV002", "nhanvien", "Nhân viên", "x");
         Session.start(staff);
     }
@@ -35,6 +37,14 @@ class SalesServiceTest {
     @AfterEach
     void tearDown() {
         Session.end();
+    }
+
+    @Test
+    void checkoutWritesAuditEntry() {
+        service.checkout(List.of(new CartLine(1, 2)), "Tiền mặt");
+
+        assertEquals(1, log.entries.size());
+        assertTrue(log.entries.get(0).startsWith("NV002|BAN_HANG|"));
     }
 
     @Test

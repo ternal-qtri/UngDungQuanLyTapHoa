@@ -142,6 +142,15 @@ final class Fakes {
         }
     }
 
+    /** Nhật ký trong bộ nhớ: mỗi phần tử là "MaNV|HanhDong|ChiTiet". */
+    static final class NhatKy implements com.example.apptaphoa.repository.NhatKyRepository {
+        final List<String> entries = new ArrayList<>();
+
+        @Override public void insert(String maNV, String hanhDong, String chiTiet) {
+            entries.add(maNV + "|" + hanhDong + "|" + chiTiet);
+        }
+    }
+
     static NhanVien user(String ma, String username, String vaiTro, String passwordHash) {
         NhanVien nv = new NhanVien();
         nv.setMaNV(ma);

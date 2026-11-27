@@ -100,3 +100,14 @@ GO
 -- Chỉ mục cho truy vấn theo ngày (báo cáo doanh thu, lịch sử hóa đơn)
 CREATE INDEX IX_HoaDon_ThoiGian ON HoaDon(ThoiGian);
 GO
+
+-- Nhật ký thao tác quan trọng (đăng nhập, bán hàng, nhập hàng, trả nợ, đổi mật khẩu).
+-- Chỉ ghi thêm. MaNV không có khóa ngoại để giữ lại nhật ký khi đăng nhập sai hoặc nhân viên bị xóa.
+CREATE TABLE NhatKy (
+    MaNhatKy BIGINT        IDENTITY(1,1) PRIMARY KEY,
+    ThoiGian DATETIME2(0)  NOT NULL CONSTRAINT DF_NhatKy_ThoiGian DEFAULT SYSDATETIME(),
+    MaNV     NVARCHAR(10)  NULL,
+    HanhDong NVARCHAR(40)  NOT NULL,
+    ChiTiet  NVARCHAR(400) NULL
+);
+GO

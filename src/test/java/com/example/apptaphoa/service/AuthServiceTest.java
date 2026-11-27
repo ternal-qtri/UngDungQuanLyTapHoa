@@ -39,7 +39,8 @@ class AuthServiceTest {
         users.insert(Fakes.user("QL001", "quanly", "Quản lý", PasswordHasher.hash("Quanly@123")));
         clock = new MutableClock();
         sentCodes.clear();
-        auth = new AuthService(users, (email, code) -> sentCodes.add(code), clock);
+        auth = new AuthService(users, (email, code) -> sentCodes.add(code), clock,
+                new AuditService(new Fakes.NhatKy()));
     }
 
     @AfterEach

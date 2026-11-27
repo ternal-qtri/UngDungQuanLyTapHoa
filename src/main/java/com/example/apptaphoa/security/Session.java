@@ -3,6 +3,8 @@ package com.example.apptaphoa.security;
 import com.example.apptaphoa.exception.AccessDeniedException;
 import com.example.apptaphoa.model.NhanVien;
 
+import java.util.Optional;
+
 /** Người dùng đang đăng nhập. Thay thế AuthUtil. Mọi kiểm tra quyền nằm ở đây. */
 public final class Session {
     private static NhanVien current;
@@ -15,6 +17,11 @@ public final class Session {
 
     public static synchronized void end() {
         current = null;
+    }
+
+    /** Người đang đăng nhập, hoặc rỗng nếu chưa đăng nhập. */
+    public static synchronized Optional<NhanVien> current() {
+        return Optional.ofNullable(current);
     }
 
     /** Trả về người dùng hiện tại, hoặc ném AccessDeniedException nếu chưa đăng nhập. */
