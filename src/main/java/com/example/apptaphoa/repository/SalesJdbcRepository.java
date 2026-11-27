@@ -11,9 +11,64 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SalesJdbcRepository implements SalesRepository {
+
+    @Override
+    public List<HoaDon> findInvoices(LocalDate from, LocalDate to, String maNV) {
+        String sql = "SELECT MaHD, ThoiGian, TongTien, HinhThucTT, MaNV FROM HoaDon "
+                + "WHERE CAST(ThoiGian AS date) BETWEEN ? AND ? "
+                + (maNV == null ? "" : "AND MaNV = ? ")
+                + "ORDER BY ThoiGian DESC";
+        try (Connection c = Db.open(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(from));
+            ps.setDate(2, java.sql.Date.valueOf(to));
+            if (maNV != null) ps.setString(3, maNV);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<HoaDon> list = new ArrayList<>();
+                while (rs.next()) {
+                    HoaDon hd = new HoaDon();
+                    hd.setMaHD(rs.getInt("MaHD"));
+                    hd.setThoiGian(rs.getTimestamp("ThoiGian"));
+                    hd.setTongTien(rs.getDouble("TongTien"));
+                    hd.setHinhThucTT(rs.getString("HinhThucTT"));
+                    hd.setMaNV(rs.getString("MaNV"));
+                    list.add(hd);
+                }
+                return list;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Không đọc được lịch sử hóa đơn", e);
+        }
+    }
+
+    @Override
+    public List<ChiTietHoaDon> findLines(int maHD) {
+        String sql = "SELECT ct.MaHD, ct.MaSanPham, sp.TenSanPham, ct.SoLuong, ct.DonGia, ct.ThanhTien "
+                + "FROM ChiTietHoaDon ct JOIN SanPham sp ON sp.MaSanPham = ct.MaSanPham WHERE ct.MaHD = ?";
+        try (Connection c = Db.open(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, maHD);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<ChiTietHoaDon> list = new ArrayList<>();
+                while (rs.next()) {
+                    ChiTietHoaDon line = new ChiTietHoaDon();
+                    line.setMaHD(rs.getInt("MaHD"));
+                    line.setMaSanPham(rs.getInt("MaSanPham"));
+                    line.setTenSanPham(rs.getString("TenSanPham"));
+                    line.setSoLuong(rs.getInt("SoLuong"));
+                    line.setDonGia(rs.getDouble("DonGia"));
+                    line.setThanhTien(rs.getDouble("ThanhTien"));
+                    list.add(line);
+                }
+                return list;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Không đọc được chi tiết hóa đơn", e);
+        }
+    }
 
     @Override
     public int saveInvoice(HoaDon invoice, List<ChiTietHoaDon> lines) {
