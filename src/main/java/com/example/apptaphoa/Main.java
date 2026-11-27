@@ -1,17 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.example.apptaphoa;
 
-import com.example.apptaphoa.views.WelcomeFrame;
+import com.example.apptaphoa.config.AppContext;
+import com.example.apptaphoa.ui.LoginScreen;
+import com.example.apptaphoa.ui.theme.AppTheme;
 
-/**
- *
- * @author qtriz
- */
+import javax.swing.SwingUtilities;
+
+/** Điểm vào của ứng dụng: cài giao diện, tạo AppContext và mở màn hình đăng nhập. */
 public class Main {
     public static void main(String[] args) {
-       new WelcomeFrame().setVisible(true);
+        AppTheme.install();
+        SwingUtilities.invokeLater(() -> new LoginScreen(new AppContext()).setVisible(true));
     }
 }

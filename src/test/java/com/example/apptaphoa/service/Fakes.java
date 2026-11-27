@@ -89,6 +89,16 @@ final class Fakes {
         Sales(Products products) { this.products = products; }
 
         @Override
+        public List<HoaDon> findInvoices(java.time.LocalDate from, java.time.LocalDate to, String maNV) {
+            return invoices.stream().filter(hd -> maNV == null || maNV.equals(hd.getMaNV())).toList();
+        }
+
+        @Override
+        public List<ChiTietHoaDon> findLines(int maHD) {
+            return List.of();
+        }
+
+        @Override
         public int saveInvoice(HoaDon invoice, List<ChiTietHoaDon> lines) {
             for (ChiTietHoaDon line : lines) {
                 SanPham sp = products.byId.get(line.getMaSanPham());
