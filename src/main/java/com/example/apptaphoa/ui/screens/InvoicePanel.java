@@ -3,7 +3,9 @@ package com.example.apptaphoa.ui.screens;
 import com.example.apptaphoa.config.AppContext;
 import com.example.apptaphoa.exception.BusinessException;
 import com.example.apptaphoa.model.ChiTietHoaDon;
+import com.example.apptaphoa.exception.DataAccessException;
 import com.example.apptaphoa.model.HoaDon;
+import com.example.apptaphoa.report.InvoicePdf;
 import com.example.apptaphoa.ui.Screen;
 import com.example.apptaphoa.ui.components.AppTable;
 import com.example.apptaphoa.ui.components.DateField;
@@ -11,12 +13,17 @@ import com.example.apptaphoa.ui.components.Ui;
 import com.example.apptaphoa.ui.theme.AppTheme;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,8 +58,11 @@ public class InvoicePanel extends JPanel implements Screen {
         filter.addActionListener(e -> Ui.guard(this, this::load));
         JButton detail = Ui.secondaryButton("Xem chi tiết");
         detail.addActionListener(e -> Ui.guard(this, this::showDetail));
+        JButton pdf = Ui.secondaryButton("Xuất PDF");
+        pdf.addActionListener(e -> Ui.guard(this, this::exportPdf));
         bar.add(filter);
         bar.add(detail);
+        bar.add(pdf);
 
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
@@ -68,6 +78,27 @@ public class InvoicePanel extends JPanel implements Screen {
 
     private void load() {
         table.setItems(app.sales.listInvoices(from.value(), to.value()));
+    }
+
+    private void exportPdf() {
+        HoaDon hd = table.selected().orElseThrow(() -> new BusinessException("Hãy chọn một hóa đơn"));
+        List<ChiTietHoaDon> lines = app.sales.invoiceLines(hd.getMaHD());
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("HoaDon_" + hd.getMaHD() + ".pdf"));
+        chooser.setFileFilter(new FileNameExtensionFilter("File PDF", "pdf"));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        Path path = chooser.getSelectedFile().toPath();
+        if (!path.toString().toLowerCase().endsWith(".pdf")) {
+            path = Path.of(path + ".pdf");
+        }
+        try {
+            InvoicePdf.write(path, hd, lines);
+        } catch (IOException | com.itextpdf.text.DocumentException e) {
+            throw new DataAccessException("Không xuất được PDF", e);
+        }
+        Ui.info(this, "Đã xuất hóa đơn ra: " + path);
     }
 
     private void showDetail() {

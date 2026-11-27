@@ -39,9 +39,12 @@ public class SupplierPanel extends JPanel implements Screen {
         bar.setOpaque(false);
         JButton add = Ui.primaryButton("Thêm");
         add.addActionListener(e -> Ui.guard(this, this::create));
+        JButton edit = Ui.secondaryButton("Sửa");
+        edit.addActionListener(e -> Ui.guard(this, this::edit));
         JButton delete = Ui.dangerButton("Xóa");
         delete.addActionListener(e -> Ui.guard(this, this::delete));
         bar.add(add);
+        bar.add(edit);
         bar.add(delete);
         add(bar, BorderLayout.SOUTH);
     }
@@ -56,6 +59,17 @@ public class SupplierPanel extends JPanel implements Screen {
                 new String[]{"*Tên nhà cung cấp", "Điện thoại", "Địa chỉ"}, null)
                 .ifPresent(v -> {
                     app.suppliers.create(v[0], v[1], v[2]);
+                    refresh();
+                });
+    }
+
+    private void edit() {
+        NhaCungCap ncc = table.selected().orElseThrow(() -> new BusinessException("Hãy chọn một nhà cung cấp"));
+        Forms.ask(this, "Sửa nhà cung cấp - #" + ncc.getMaNCC(),
+                new String[]{"*Tên nhà cung cấp", "Điện thoại", "Địa chỉ"},
+                new String[]{ncc.getHoTenNCC(), ncc.getSoDienThoai(), ncc.getDiaChi()})
+                .ifPresent(v -> {
+                    app.suppliers.update(ncc.getMaNCC(), v[0], v[1], v[2]);
                     refresh();
                 });
     }

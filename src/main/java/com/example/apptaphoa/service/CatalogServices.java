@@ -81,9 +81,20 @@ public final class CatalogServices {
             Session.requireRole(Role.MANAGER);
             NhaCungCap ncc = new NhaCungCap();
             ncc.setHoTenNCC(Checks.requireText(ten, "Tên nhà cung cấp"));
-            ncc.setSoDienThoai(sdt == null ? null : sdt.trim());
+            ncc.setSoDienThoai(Checks.optionalPhone(sdt, "Số điện thoại"));
             ncc.setDiaChi(diaChi == null ? null : diaChi.trim());
             return suppliers.insert(ncc);
+        }
+
+        /** Sửa thông tin liên hệ. Công nợ không đổi: lấy bản ghi hiện tại rồi chỉ thay các trường nhập. */
+        public void update(int maNCC, String ten, String sdt, String diaChi) {
+            Session.requireRole(Role.MANAGER);
+            NhaCungCap ncc = suppliers.findById(maNCC)
+                    .orElseThrow(() -> new BusinessException("Nhà cung cấp không tồn tại"));
+            ncc.setHoTenNCC(Checks.requireText(ten, "Tên nhà cung cấp"));
+            ncc.setSoDienThoai(Checks.optionalPhone(sdt, "Số điện thoại"));
+            ncc.setDiaChi(diaChi == null ? null : diaChi.trim());
+            suppliers.update(ncc);
         }
 
         public void delete(int maNCC) {
@@ -111,6 +122,7 @@ public final class CatalogServices {
             Checks.requireText(nv.getTenDangNhap(), "Tên đăng nhập");
             Checks.requireText(matKhauTho, "Mật khẩu");
             Role.fromDbValue(nv.getVaiTro()); // ném lỗi nếu vai trò không hợp lệ
+            nv.setEmail(Checks.optionalEmail(nv.getEmail(), "Email"));
             nv.setMatKhau(PasswordHasher.hash(matKhauTho));
             employees.insert(nv);
         }
@@ -120,6 +132,7 @@ public final class CatalogServices {
             Checks.requireText(nv.getMaNV(), "Mã nhân viên");
             Checks.requireText(nv.getTenDangNhap(), "Tên đăng nhập");
             Role.fromDbValue(nv.getVaiTro());
+            nv.setEmail(Checks.optionalEmail(nv.getEmail(), "Email"));
             employees.update(nv);
         }
 

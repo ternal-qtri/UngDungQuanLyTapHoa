@@ -8,9 +8,11 @@ import com.example.apptaphoa.security.Session;
 /** Trả công nợ cho nhà cung cấp. Chỉ quản lý được thực hiện. */
 public class DebtService {
     private final NhaCungCapRepository suppliers;
+    private final AuditService audit;
 
-    public DebtService(NhaCungCapRepository suppliers) {
+    public DebtService(NhaCungCapRepository suppliers, AuditService audit) {
         this.suppliers = suppliers;
+        this.audit = audit;
     }
 
     public void payDebt(int maNCC, double amount) {
@@ -22,5 +24,6 @@ public class DebtService {
         if (!suppliers.reduceDebt(maNCC, money)) {
             throw new BusinessException("Số tiền trả vượt quá công nợ hoặc nhà cung cấp không tồn tại");
         }
+        audit.record("TRA_NO", "NCC " + maNCC + ", số tiền " + money);
     }
 }

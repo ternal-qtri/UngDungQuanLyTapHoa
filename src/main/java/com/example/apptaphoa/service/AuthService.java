@@ -23,12 +23,14 @@ public class AuthService {
     private final NhanVienRepository users;
     private final OtpSender otpSender;
     private final Clock clock;
+    private final AuditService audit;
     private final Map<String, OtpChallenge> pendingOtp = new HashMap<>();
 
-    public AuthService(NhanVienRepository users, OtpSender otpSender, Clock clock) {
+    public AuthService(NhanVienRepository users, OtpSender otpSender, Clock clock, AuditService audit) {
         this.users = users;
         this.otpSender = otpSender;
         this.clock = clock;
+        this.audit = audit;
     }
 
     public NhanVien login(String username, String password) {
@@ -38,8 +40,13 @@ public class AuthService {
         }
         NhanVien user = users.findByUsername(name)
                 .filter(u -> PasswordHasher.verify(password, u.getMatKhau()))
-                .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không đúng"));
+                .orElse(null);
+        if (user == null) {
+            audit.record("DANG_NHAP_THAT_BAI", "tên đăng nhập " + name);
+            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không đúng");
+        }
         Session.start(user);
+        audit.record("DANG_NHAP", "thành công");
         return user;
     }
 
@@ -55,6 +62,7 @@ public class AuthService {
         }
         checkNewPassword(newPassword);
         users.updatePasswordHash(current.getTenDangNhap(), PasswordHasher.hash(newPassword));
+        audit.record("DOI_MAT_KHAU", "tài khoản " + current.getTenDangNhap());
     }
 
     /** Bước 1 quên mật khẩu: kiểm tra tên đăng nhập + email rồi gửi OTP. */
@@ -82,6 +90,7 @@ public class AuthService {
         checkNewPassword(newPassword);
         pendingOtp.remove(name);
         users.updatePasswordHash(name, PasswordHasher.hash(newPassword));
+        audit.record("QUEN_MAT_KHAU", "tài khoản " + name);
     }
 
     private static void checkNewPassword(String password) {

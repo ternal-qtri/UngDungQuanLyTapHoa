@@ -25,10 +25,12 @@ public class SalesService {
 
     private final SanPhamRepository products;
     private final SalesRepository sales;
+    private final AuditService audit;
 
-    public SalesService(SanPhamRepository products, SalesRepository sales) {
+    public SalesService(SanPhamRepository products, SalesRepository sales, AuditService audit) {
         this.products = products;
         this.sales = sales;
+        this.audit = audit;
     }
 
     /** Hóa đơn trong khoảng ngày. Nhân viên chỉ thấy hóa đơn của chính mình. */
@@ -86,6 +88,8 @@ public class SalesService {
         invoice.setTongTien(Checks.money(total));
         invoice.setHinhThucTT(payment);
         invoice.setMaNV(seller.getMaNV());
-        return sales.saveInvoice(invoice, lines);
+        int maHD = sales.saveInvoice(invoice, lines);
+        audit.record("BAN_HANG", "HĐ #" + maHD + ", tổng " + invoice.getTongTien() + ", " + payment);
+        return maHD;
     }
 }

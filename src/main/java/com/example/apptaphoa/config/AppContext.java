@@ -2,11 +2,13 @@ package com.example.apptaphoa.config;
 
 import com.example.apptaphoa.mail.GmailOtpSender;
 import com.example.apptaphoa.repository.DoanhThuJdbcRepository;
+import com.example.apptaphoa.repository.NhatKyJdbcRepository;
 import com.example.apptaphoa.repository.NhaCungCapJdbcRepository;
 import com.example.apptaphoa.repository.NhanVienJdbcRepository;
 import com.example.apptaphoa.repository.PurchaseJdbcRepository;
 import com.example.apptaphoa.repository.SalesJdbcRepository;
 import com.example.apptaphoa.repository.SanPhamJdbcRepository;
+import com.example.apptaphoa.service.AuditService;
 import com.example.apptaphoa.service.AuthService;
 import com.example.apptaphoa.service.CatalogServices;
 import com.example.apptaphoa.service.DebtService;
@@ -33,11 +35,12 @@ public final class AppContext {
         var nhaCungCap = new NhaCungCapJdbcRepository();
         var sales = new SalesJdbcRepository();
         var purchase = new PurchaseJdbcRepository();
+        var audit = new AuditService(new NhatKyJdbcRepository());
 
-        this.auth = new AuthService(nhanVien, new GmailOtpSender(), Clock.systemDefaultZone());
-        this.sales = new SalesService(sanPham, sales);
-        this.purchases = new PurchaseService(nhaCungCap, purchase);
-        this.debts = new DebtService(nhaCungCap);
+        this.auth = new AuthService(nhanVien, new GmailOtpSender(), Clock.systemDefaultZone(), audit);
+        this.sales = new SalesService(sanPham, sales, audit);
+        this.purchases = new PurchaseService(nhaCungCap, purchase, audit);
+        this.debts = new DebtService(nhaCungCap, audit);
         this.reports = new ReportService(new DoanhThuJdbcRepository());
         this.products = new CatalogServices.ProductService(sanPham);
         this.suppliers = new CatalogServices.SupplierService(nhaCungCap);
