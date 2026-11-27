@@ -1,104 +1,134 @@
 # 🏪 Phần Mềm Quản Lý Tạp Hóa
 
-Ứng dụng quản lý cửa hàng tạp hóa được phát triển bằng Java Desktop, hỗ trợ quản lý sản phẩm, nhân viên, hóa đơn và quy trình bán hàng. Dự án được thực hiện theo hình thức làm việc nhóm với mục tiêu mô phỏng quy trình quản lý bán lẻ trong thực tế.
+Ứng dụng Java Desktop (Swing) quản lý cửa hàng tạp hóa: sản phẩm, nhà cung cấp, phiếu nhập, bán hàng, hóa đơn, công nợ, nhân viên và báo cáo doanh thu. Đồ án sinh viên, làm theo nhóm.
 
-## 📌 Giới Thiệu
+## 🛠 Công nghệ
 
-Phần mềm giúp cửa hàng tạp hóa quản lý hiệu quả hoạt động kinh doanh thông qua các chức năng quản lý hàng hóa, bán hàng và theo dõi hóa đơn. Hệ thống được xây dựng trên nền tảng Java Swing kết hợp SQL Server nhằm đảm bảo khả năng lưu trữ và xử lý dữ liệu ổn định.
+- Java 21, Maven
+- Swing + [FlatLaf](https://www.formdev.com/flatlaf/) (giao diện)
+- JDBC + SQL Server 2019 trở lên (`mssql-jdbc`)
+- iText 5 (xuất PDF)
+- JUnit 5 (kiểm thử)
 
-## ✨ Chức Năng Chính
-
-### Quản lý sản phẩm
-
-* Thêm, sửa, xóa sản phẩm
-* Tìm kiếm sản phẩm
-* Quản lý số lượng tồn kho
-
-### Quản lý danh mục
-
-* Thêm, sửa, xóa danh mục sản phẩm
-* Phân loại hàng hóa theo nhóm
-
-### Quản lý nhân viên
-
-* Quản lý thông tin nhân viên
-* Cập nhật và tra cứu dữ liệu nhân viên
-
-### Quản lý hóa đơn
-
-* Tạo hóa đơn bán hàng
-* Xem danh sách hóa đơn
-* Tra cứu lịch sử giao dịch
-
-### Bán hàng
-
-* Chọn sản phẩm và số lượng
-* Tính tổng tiền tự động
-* Cập nhật tồn kho sau khi thanh toán
-
-## 🛠 Công Nghệ Sử Dụng
-
-* Java Core
-* Java Swing
-* JDBC
-* SQL Server
-* Git & GitHub
-
-## 🗄 Cơ Sở Dữ Liệu
-
-Hệ thống sử dụng SQL Server để lưu trữ dữ liệu:
-
-* Products
-* Categories
-* Employees
-* Invoices
-* InvoiceDetails
-
-## 🚀 Cài Đặt Và Chạy Dự Án
+## 🚀 Cài đặt và chạy
 
 ### Yêu cầu
 
-* JDK 17 hoặc cao hơn
-* SQL Server
-* Eclipse hoặc NetBeans
+- JDK 21
+- Maven 3.9 trở lên
+- SQL Server 2019 trở lên (có thể chạy bằng Docker, xem bên dưới)
 
-### Các bước thực hiện
+### 1. Tạo cơ sở dữ liệu
 
-1. Clone dự án:
+Chạy lần lượt hai file SQL trong thư mục `db/` (SSMS, `sqlcmd` hoặc Azure Data Studio):
 
 ```bash
-git clone https://github.com/ternal-qtri/UngDungQuanLyTapHoa.git
+sqlcmd -S localhost -U sa -C -i db/schema.sql
+sqlcmd -S localhost -U sa -C -i db/seed.sql
 ```
 
-2. Khởi tạo cơ sở dữ liệu SQL Server.
+- `schema.sql` tạo database `AppTapHoa` và các bảng.
+- `seed.sql` thêm tài khoản demo và dữ liệu mẫu. Chạy một lần trên DB mới.
 
-3. Cập nhật thông tin kết nối trong file cấu hình JDBC.
+### 2. Tạo tài khoản SQL cho ứng dụng
 
-4. Chạy chương trình từ lớp Main.
+Không dùng `sa` trong ứng dụng. Tạo login có quyền tối thiểu:
 
-## 👥 Vai trò cá nhân
+```sql
+CREATE LOGIN tapho_app WITH PASSWORD = N'<mật-khẩu-mạnh>', CHECK_POLICY = ON;
+USE AppTapHoa;
+CREATE USER tapho_app FOR LOGIN tapho_app;
+ALTER ROLE db_datareader ADD MEMBER tapho_app;
+ALTER ROLE db_datawriter ADD MEMBER tapho_app;
+```
 
-* Nguyễn Quốc Trí – Nhóm trưởng, lập trình viên
-* Phân tích yêu cầu và quản lý tiến độ dự án
-* Thiết kế cơ sở dữ liệu
-* Xây dựng chức năng đăng nhập và phân quyền
-* Phát triển chức năng quản lý sản phẩm, hóa đơn và bán hàng
+### 3. Cấu hình biến môi trường
 
-## 📚 Kiến Thức Và Kỹ Năng Đạt Được
+Ứng dụng không chứa mật khẩu trong mã nguồn. Đặt các biến sau trước khi chạy:
 
-* Làm việc nhóm theo dự án thực tế
-* Phân tích yêu cầu hệ thống
-* Thiết kế cơ sở dữ liệu quan hệ
-* Lập trình Java Desktop với Swing
-* Kết nối và thao tác dữ liệu bằng JDBC
-* Sử dụng Git và GitHub để quản lý mã nguồn
+| Biến | Bắt buộc | Mô tả |
+|------|----------|-------|
+| `TAPHOA_DB_USER` | Có | Tài khoản SQL (ví dụ `tapho_app`) |
+| `TAPHOA_DB_PASSWORD` | Có | Mật khẩu tài khoản SQL |
+| `TAPHOA_DB_URL` | Không | Mặc định `jdbc:sqlserver://localhost:1433;databaseName=AppTapHoa;...` |
+| `TAPHOA_MAIL_USER` | Có (khi dùng quên mật khẩu) | Email Gmail gửi OTP |
+| `TAPHOA_MAIL_PASSWORD` | Có (khi dùng quên mật khẩu) | Gmail App Password |
 
-## 📊 Kết Quả
+Ví dụ (Linux/macOS):
 
-* Điểm dự án: **8.3/10**
-* Hoàn thành đầy đủ các chức năng quản lý cơ bản của cửa hàng tạp hóa.
+```bash
+export TAPHOA_DB_USER=tapho_app
+export TAPHOA_DB_PASSWORD='<mật-khẩu-mạnh>'
+```
 
-## 🔗 Liên Kết
+### 4. Chạy ứng dụng
 
-GitHub Repository:
+```bash
+mvn compile exec:java
+```
+
+Hoặc chạy lớp `com.example.apptaphoa.Main` từ IDE (nhớ đặt biến môi trường trong cấu hình chạy).
+
+### 5. Kiểm thử
+
+```bash
+mvn verify
+```
+
+## 🔑 Tài khoản demo
+
+| Tên đăng nhập | Mật khẩu | Vai trò |
+|---------------|----------|---------|
+| `quanly` | `Quanly@123` | Quản lý |
+| `nhanvien` | `Nhanvien@123` | Nhân viên |
+
+Chỉ dùng cho môi trường thử nghiệm. Đổi hoặc xóa trước khi đưa vào dùng thật.
+
+## 🗄 Cơ sở dữ liệu
+
+Sơ đồ quan hệ (rút gọn):
+
+```mermaid
+erDiagram
+    NhanVien ||--o{ HoaDon : "lập"
+    HoaDon ||--|{ ChiTietHoaDon : "gồm"
+    SanPham ||--o{ ChiTietHoaDon : "được bán trong"
+    NhanVien ||--o{ PhieuNhapHang : "lập"
+    NhaCungCap ||--o{ PhieuNhapHang : "cung cấp"
+    PhieuNhapHang ||--|{ ChiTietPhieuNhap : "gồm"
+    SanPham ||--o{ ChiTietPhieuNhap : "được nhập trong"
+    NhaCungCap ||--o{ DuNoHang : "có khoản nợ"
+
+    NhanVien { string MaNV PK, string TenDangNhap, string MatKhau, string VaiTro }
+    SanPham { int MaSanPham PK, string TenSanPham, decimal DonGia, int SoLuongTonKho }
+    NhaCungCap { int MaNCC PK, string HoTenNCC, decimal DuNo }
+    HoaDon { int MaHD PK, datetime ThoiGian, decimal TongTien, string MaNV FK }
+    ChiTietHoaDon { int MaHD PK,FK, int MaSanPham PK,FK, int SoLuong, decimal DonGia }
+    PhieuNhapHang { int MaPN PK, datetime NgayNhap, decimal TongTien, int MaNCC FK, string MaNV FK }
+    ChiTietPhieuNhap { int MaPN PK,FK, int MaSanPham PK,FK, int SoLuong, decimal DonGiaNhap }
+    DuNoHang { int MaDuNo PK, int MaNCC FK, decimal SoTienNo, date NgayNo, string TrangThai }
+```
+
+## 📁 Cấu trúc thư mục
+
+```
+db/                 schema.sql, seed.sql
+src/main/java/com/example/apptaphoa/
+  config/           cấu hình đọc từ biến môi trường
+  repository/       truy cập dữ liệu (JDBC)
+  security/         băm mật khẩu PBKDF2
+  controller/, views/, dao/, utils/   mã Swing cũ (sẽ được thay dần)
+src/test/java/      kiểm thử JUnit 5
+```
+
+## 👥 Thành viên
+
+- Nguyễn Quốc Trí: nhóm trưởng, lập trình viên. Phân tích yêu cầu, thiết kế cơ sở dữ liệu, đăng nhập và phân quyền, quản lý sản phẩm, hóa đơn và bán hàng.
+
+## 📊 Kết quả
+
+- Điểm dự án: **8.3/10** (bản đầu)
+
+## 🔗 Liên kết
+
 https://github.com/ternal-qtri/UngDungQuanLyTapHoa
