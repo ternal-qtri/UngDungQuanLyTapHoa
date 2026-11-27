@@ -207,8 +207,8 @@ public class QuenMatKhauFrame extends JFrame {
 			prop.put("mail.smtp.host", "smtp.gmail.com");
 			prop.put("mail.smtp.port", "465");
 
-			String senderEmail = "trinqps39806@gmail.com";
-			String password = "fjty pfsc balt srqy";
+			String senderEmail = com.example.apptaphoa.utils.Env.require("TAPHOA_MAIL_USER");
+			String password = com.example.apptaphoa.utils.Env.require("TAPHOA_MAIL_PASSWORD");
 			Session session = Session.getInstance(prop, new Authenticator() {
 				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {

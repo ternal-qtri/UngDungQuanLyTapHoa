@@ -13,12 +13,13 @@ public class XJDBC {
     public static Connection openConnection() {
         String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         // Sửa lại db, user, pass cho đúng môi trường của bạn
-        String dburl  = "jdbc:sqlserver://localhost:1433;databaseName=AppTapHoa;user=sa;password=Tri12092005;encrypt=false;";
+        String dburl  = "jdbc:sqlserver://localhost:1433;databaseName=AppTapHoa;encrypt=false;";
 
         try {
             if (!isReady()) {
                 Class.forName(driver);
-                connection = DriverManager.getConnection(dburl);
+                connection = DriverManager.getConnection(dburl,
+                        Env.require("TAPHOA_DB_USER"), Env.require("TAPHOA_DB_PASSWORD"));
             }
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);

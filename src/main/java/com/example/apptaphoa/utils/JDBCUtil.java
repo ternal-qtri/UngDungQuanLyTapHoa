@@ -12,8 +12,8 @@ public class JDBCUtil {
         try {
             // Các thông số
             String url = "jdbc:sqlserver://localhost:1433;database=AppTapHoa;encrypt=true;trustServerCertificate=true;";
-            String username = "sa";
-            String password = "Tri12092005";
+            String username = Env.require("TAPHOA_DB_USER");
+            String password = Env.require("TAPHOA_DB_PASSWORD");
 
             // Tạo kết nối
             c = DriverManager.getConnection(url, username, password);

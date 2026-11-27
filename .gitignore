@@ -1,0 +1,13 @@
+# Build output
+target/
+
+# IDE
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+
+# Bí mật cục bộ: không commit
+.env
+db.properties
